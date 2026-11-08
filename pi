@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# pull=never ensures that no interactive image selection dialog starts.
+# Image has to be built manually beforehand
+#
+# :z = shared SELinux relabel, so multiple pi instances can use the same directory at once
+# :Z would relabel private-per-container and break the first container when a second starts
+
+# Print the first directory at or above $1 that contains a .git directory.
+# Prints nothing and fails when none exists. .git files (worktrees, submodules) get ignored.
+find_git_root() {
+    local dir="$1"
+    while true; do
+        if [ -d "$dir/.git" ]; then
+            printf '%s\n' "$dir"
+            return 0
+        fi
+        [ "$dir" = "/" ] && return 1
+        dir="$(dirname "$dir")"
+    done
+}
+
+# Ask whether the repo at $1 should be mounted into the container.
+# Exit code 0 = yes, 1 = no. Empty answer means no.
+confirm_mount() {
+    local answer
+    read -r -p "Git repo found at $1. Mount it into the container? [y/N] " answer
+    [ "$answer" = "y" ] || [ "$answer" = "Y" ]
+}
+
+# Print the mount anchor for $1: the git root above it when the user confirms,
+# else the directory itself.
+define_mount_src() {
+    local git_root
+    git_root="$(find_git_root "$1")"
+    if [ -n "$git_root" ] && [ "$git_root" != "$1" ] && confirm_mount "$git_root"; then
+        printf '%s\n' "$git_root"
+    else
+        printf '%s\n' "$1"
+    fi
+}
+
+# Exit code 0 when $1 is a safe container mount name,
+# 1 when it would shadow a container system directory.
+is_safe_mount_name() {
+    case "$1" in
+        ""|/|bin|boot|dev|etc|home|lib|lib64|media|mnt|opt|proc|root|run|sbin|srv|sys|tmp|usr|var)
+            return 1
+            ;;
+    esac
+    return 0
+}
+
+# Container paths mirror host names from the anchor down:
+# host /.../git-dir/sub-dir/exec-dir -> container /git-dir/sub-dir/exec-dir
+mount_src="$(define_mount_src "$PWD")"
+
+name="$(basename "$mount_src")"
+if ! is_safe_mount_name "$name"; then
+    echo "error: cannot mount '$mount_src' at '/$name': name collides with a container system directory" >&2
+    exit 1
+fi
+
+# Path of $PWD inside the container: /<anchor name> + $PWD relative to the anchor
+workdir="/$name${PWD#"$mount_src"}"
+
+podman run --rm --interactive --tty --pull=never \
+    --volume "$mount_src:/$name:z" \
+    --workdir "$workdir" \
+    --volume "pi-agent-home:/root/.pi/agent" \
+    --network host \
+    pi-in-docker "$@"

@@ -1,0 +1,8 @@
+{
+  "tui.input.submit": ["alt+enter"],
+  "tui.input.newLine": ["enter"],
+  "tui.altScreen.pageUp": [],
+  "tui.altScreen.pageDown": [],
+  "tui.altScreen.top": [],
+  "tui.altScreen.bottom": []
+}

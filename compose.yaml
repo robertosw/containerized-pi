@@ -1,0 +1,6 @@
+services:
+  pi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pi-in-docker:latest

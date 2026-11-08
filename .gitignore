@@ -1,0 +1,5 @@
+/.idea/
+# Local dev-only symlink shim so `node --test` can resolve @earendil-works/*
+# (see extensions/.gitignore for the same rule under extensions/).
+# Not part of the app; pi loads packages from the global install.
+node_modules/

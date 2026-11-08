@@ -1,0 +1,13 @@
+# Ignore dependencies & build output
+node_modules/
+dist/
+*.js
+*.js.map
+*.d.ts
+
+# Ignore logs
+*.log
+
+# Ignore local config
+.env
+local-settings.json

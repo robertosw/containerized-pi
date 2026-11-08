@@ -1,0 +1,10 @@
+{
+  "webSearch": {
+    "allowedProviders": ["tavily", "exa", "duckduckgo"]
+  },
+  "searchRouting": {
+    "providers": ["tavily", "exa"],
+    "fallbackOn": ["transient", "quota", "network", "invalid-response"]
+  },
+  "workflow": "auto-summary"
+}
