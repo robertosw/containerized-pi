@@ -1,0 +1,7 @@
+name: pi_dart_lsp
+description: Daemon that fronts a persistent dart language-server for pi.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"

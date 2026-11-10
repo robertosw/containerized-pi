@@ -26,7 +26,9 @@ echo "Refreshing extensions from image cache"
 rm -rf /root/.pi/agent/extensions
 mkdir -p /root/.pi/agent/extensions
 if [ -d "/usr/local/share/pi/extensions" ]; then
-    cp -Rf /usr/local/share/pi/extensions/. /root/.pi/agent/extensions/
+    # -p keeps the image mtimes: pi-dart-lsp rebuilds its daemon when a source mtime is newer than
+    # the binary, so a fresh mtime on every container start would force a rebuild each time.
+    cp -Rpf /usr/local/share/pi/extensions/. /root/.pi/agent/extensions/
 fi
 
 echo "Refreshing skills from image cache"
@@ -47,6 +49,16 @@ fi
 echo "Try setting env var 'TAVILY_API_KEY'"
 if [ -f "/root/.pi/agent/tavily_api_key" ]; then
     export TAVILY_API_KEY="$(cat /root/.pi/agent/tavily_api_key | tr -d '\r\n ')"
+fi
+
+echo "Adding flutter/dart shims + SDK to PATH"
+if [ -n "$FLUTTER_PATH" ]; then
+  # shims must precede the real SDK so `flutter`/`dart` resolve to them first
+  export PATH="/usr/local/share/pi/shims:$FLUTTER_PATH/bin:$PATH"
+
+  # Link ~/.pub-cache to the cache the project's package_config.json points at.
+  # Sourced (not executed) so the PUB_CACHE export reaches the pi process.
+  . /usr/local/bin/pub-cache-link.sh
 fi
 
 # Point the llama-cpp server package at the local inference endpoint

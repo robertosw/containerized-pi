@@ -1,0 +1,7 @@
+{
+  "name": "pi-dart-lsp",
+  "private": true,
+  "pi": {
+    "extensions": ["./extension/index.ts"]
+  }
+}

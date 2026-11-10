@@ -36,6 +36,16 @@ Branches: `main` contains the containerization. `flutter` builds on it and adds 
 - [`lint`](skills/lint.md): my Dart class conventions.
 - [`ste100`](skills/ste100.md): explain or rewrite in ASD-STE100 Simplified Technical English.
 
+## Flutter / Dart (branch `flutter`)
+[`pi`](pi) mounts the host Flutter SDK and `~/.pub-cache` at their host paths and sets `FLUTTER_PATH`.
+[`entrypoint.sh`](entrypoint.sh) then:
+- puts the [`flutter` / `dart` shims](shims) and the SDK `bin` on `PATH`. The shims block `flutter analyze` / `dart analyze`
+  and point the agent to the `dart_diagnose` tool. Design: [`docs/flutter-analyze-shim.md`](docs/flutter-analyze-shim.md)
+- sources [`pub-cache-link.sh`](pub-cache-link.sh), which links `/root/.pub-cache` to the mounted pub cache
+
+[`extensions/pi-dart-lsp/`](extensions/pi-dart-lsp/README.md): custom Dart LSP extension. It gives the agent
+symbol-exact navigation and warm diagnostics (`dart_diagnose`). Design: [`docs/pi-dart-lsp-idea.md`](docs/pi-dart-lsp-idea.md)
+
 # Setup
 1. Create a symlink `/usr/local/bin/pi` that points to this executable [`pi`](pi): 
    ```shell

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# pi flutter shim — diverts `flutter analyze` to the dart_diagnose tool, passes everything else through.
+# Install to a dir that precedes the real SDK in PATH. See docs/flutter-analyze-shim.md.
+REAL="$FLUTTER_PATH/bin/flutter"
+
+if [ "$1" = "analyze" ]; then
+  echo "Not available in shell. Use the dart_diagnose tool instead."
+  exit 100
+fi
+
+exec "$REAL" "$@"

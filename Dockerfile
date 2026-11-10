@@ -19,15 +19,20 @@ COPY extensions/ /usr/local/share/pi/extensions/
 # Copy local skills into image asset cache
 COPY skills/ /usr/local/share/pi/skills/
 
+# Copy flutter/dart shims into image asset cache
+COPY shims/ /usr/local/share/pi/shims/
+RUN chmod +x /usr/local/share/pi/shims/*
+
 # Copy web-search.json (pi-web-access provider routing) into image asset cache
 COPY web-search.json /usr/local/share/pi/web-search.json
 
 # Copy keybindings into image asset cache
 COPY keybindings.json /usr/local/share/pi/keybindings.json
 
-# Copy the entrypoint script
+# Copy the entrypoint script + the pub cache link helper it sources
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY pub-cache-link.sh /usr/local/bin/pub-cache-link.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/pub-cache-link.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["pi"]

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# which flutter = /home/../flutter/bin/flutter
+# first dirname removes /flutter
+# second dirname removes /bin
+FLUTTER_HOST_PATH=$(dirname $(dirname $(which flutter)))
+
 # pull=never ensures that no interactive image selection dialog starts.
 # Image has to be built manually beforehand
 #
@@ -64,9 +69,19 @@ fi
 # Path of $PWD inside the container: /<anchor name> + $PWD relative to the anchor
 workdir="/$name${PWD#"$mount_src"}"
 
+#
+# flutter and the pub-cache have to be mounted in exactly the same directory
+# as they are in the host. Otherwise, container overwrites
+# .dart_tool/package_config.json with incompatible paths, breaking host
+# package resolution.
 podman run --rm --interactive --tty --pull=never \
     --volume "$mount_src:/$name:z" \
     --workdir "$workdir" \
     --volume "pi-agent-home:/root/.pi/agent" \
     --network host \
+    --volume "$FLUTTER_HOST_PATH:$FLUTTER_HOST_PATH:z" \
+    --volume "$HOME/.pub-cache:$HOME/.pub-cache:z" \
+    -e "FLUTTER_PATH=$FLUTTER_HOST_PATH" \
+    -e "PUB_CACHE=$HOME/.pub-cache" \
+    -e "BOT=true" \
     pi-in-docker "$@"
